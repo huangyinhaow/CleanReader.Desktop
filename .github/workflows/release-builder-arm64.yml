@@ -1,4 +1,4 @@
-name: Release Builder
+name: Release Builder Arm64
 
 on:
   workflow_dispatch:
@@ -36,7 +36,7 @@ jobs:
         id: release-drafter
 
       - name: Setup MSBuild.exe
-        uses: microsoft/setup-msbuild@v1.0.3
+        uses: microsoft/setup-msbuild@v1.1
 
       - name: Update manifest version
         run: |
@@ -44,26 +44,26 @@ jobs:
           $manifest.Package.Identity.Version = "${{github.event.inputs.version}}"
           $manifest.save(".\$env:Desktop_Project_Directory\Package.appxmanifest")
 
-      - name: Build x64
+      - name: Build arm64
         run:
-          msbuild $env:Solution_Path /p:Platform=x64 /p:AppxBundlePlatforms="x64" /p:AppxPackageDir=C:\Package\x64
+          msbuild $env:Solution_Path /p:Platform=arm64 /p:AppxBundlePlatforms="arm64" /p:AppxPackageDir=C:\Package\arm64
           /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword="123456" /restore
         env:
           BuildMode: SideloadOnly
           Configuration: Release
 
-      - name: Create x64 archive
+      - name: Create arm64 archive
         run:
-          Compress-Archive -Path C:\Package\x64\CleanReader.Bundle_${{github.event.inputs.version}}_Test -DestinationPath
-          C:\Package\CleanReader.Desktop_${{github.event.inputs.version}}_x64.zip
+          Compress-Archive -Path C:\Package\\CleanReader.Bundle_${{github.event.inputs.version}}_Test -DestinationPath
+          C:\Package\CleanReader.Desktop_${{github.event.inputs.version}}_arm64.zip
 
-      - name: Update x64 release asset
-        id: upload-release-asset-x64
+      - name: Update arm64 release asset
+        id: upload-release-asset-arm64
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.release-drafter.outputs.upload_url }}
-          asset_path: C:\Package\CleanReader.Desktop_${{github.event.inputs.version}}_x64.zip
-          asset_name: CleanReader.Desktop_${{github.event.inputs.version}}_x64.zip
+          asset_path: C:\Package\CleanReader.Desktop_*.zip
+          asset_name: CleanReader.Desktop_*.zip
           asset_content_type: application/zip
